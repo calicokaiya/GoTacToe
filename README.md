@@ -33,7 +33,6 @@ go run main.go
 
 - Create CONTRIBUTING.md
 
-- [] abc
 
 # Contributing
 If you want to submit a pull request to add or improve or improve documentation, feel free to do so in whatever way you feel most comfortable.

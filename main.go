@@ -2,183 +2,58 @@ package main
 
 import (
 	"fmt"
+	"calicokaiya/tictactoe/logic"
 	"strings"
+	"math/rand"
+	"time"
 )
 
 
-// Receives player input (between 1 and 9) and returns x y coordinates for board
-func position_map(player_input int) (int, int) {
-	switch player_input {
-	case 1:
-		return 0, 0	
-	case 2:
-		return 0, 1
-	case 3:
-		return 0, 2
-	case 4:
-		return 1, 0
-	case 5:
-		return 1, 1
-	case 6:
-		return 1, 2
-	case 7:
-		return 2, 0
-	case 8:
-		return 2, 1
-	case 9:
-		return 2, 2
-	
-	// If it errors, return -1.
-	default:
-		return -1, -1
-	}
-}
-
-
-// Asks player where they want to place marker
-func player_play(board [3][3]string, player string) [3][3]string {
+// Handles inputs and printing.
+// Playertype 0 is bot,
+// Playertype 1 is human.
+func play(board [3][3]string, player string, playertype int) [3][3]string {
+	var validpos int = -1
 	var position int
-	var valid_pos bool = false
-	var x, y int // Play coordinates
 
-	// Checks if the position is valid in the first place
-	// There might be a better way to do this ?
-	// Feel free to submit a PR
-	for !valid_pos {
-		fmt.Printf("%s's turn: ", player)
-		fmt.Scanln(&position)
-		
-		// Only do anything if position is correct first
-		if position < 1 || position > 9 {
-			fmt.Println("Value must be between 1 and 9!")
-		} else {
-			// Determines intended position
-			x, y = position_map(position)
-			
-			if board[x][y] != "_" {
-				fmt.Println("Player has already played here!")
+	fmt.Printf("%s's turn: ", player)
+
+	// 100 is a valid position, anything else is an error
+	// If player is human, ask them for their input
+	// If player is a bot, do everything automatically
+	for validpos != 100 {
+		if playertype == 1 {
+			// Player logic
+			fmt.Scanln(&position)
+			validpos = logic.CheckMoveValidity(board, position)
+			if validpos == -100 {
+				fmt.Printf("Number should be between 1 and 9!")
+			} else if validpos == -200 {
+				fmt.Printf("This cell is already occupied!")
 			} else {
-				valid_pos = true
+				board = logic.MarkBoard(board, player, position)
 			}
-		}
-	}
-
-	board[x][y] = player
-	return board
-}
-
-
-// If player is X, player becomes O, and vice versa
-func swap_player(player string) string {
-	switch player {
-	case "X":
-		return "O"
-	case "O":
-		return "X"
-	default:
-		return "X"
-	}
-}
-
-
-// Prints contents of board
-func print_board(board [3][3]string) {
-	fmt.Printf("\n")
-	// Loops through board in order to print it
-	for i := 0; i < 3; i++ {
-		fmt.Printf("%s %s %s", board[i][0], board[i][1], board[i][2])
-		fmt.Printf("     ") // Whitespace
-
-		// Prints control label
-		if i == 0 {
-			fmt.Printf("1 2 3\n")
-		} else if i == 1 {
-			fmt.Printf("4 5 6\n")
 		} else {
-			fmt.Printf("7 8 9\n")
-		}
-	}
-}
-
-
-// Determine if we have a winner (returns true if game is over)
-func check_game_state(board [3][3]string) bool {
-	var player string
-	var gameover bool
-	var underscore_count int = 0
-
-	// X X X   _ _ _   _ _ _
-	// _ _ _   X X X   _ _ _
-	// _ _ _   _ _ _   X X X
-	for i := 0; i < 3; i++ {
-		if board[i][0] != "_" && board[i][0] == board[i][1] && board[i][1] == board[i][2] {
-			player = board[i][0]
-			gameover = true
-		}
-	}
-
-
-	// X _ _   _ X _   _ _ X
-	// X _ _   _ X _   _ _ X
-	// X _ _   _ X _   _ _ X
-	for i := 0; i < 3; i++ {
-		if board[0][i] != "_" && board[0][i] == board[1][i] && board[1][i] == board[2][i] {
-			player = board[i][0]
-			gameover = true
-		}
-	}
-
-
-	// X _ _   _ _ X
-	// _ X _   _ X _
-	// _ _ X   X _ _
-	
-	if board[1][1] != "_" {
-		if board[0][0] == board[1][1] && board[1][1] == board[2][2] {
-			gameover = true
-			player = board[1][1]
-		} else if board[0][2] == board[1][1] && board[1][1] == board[2][0] {
-			gameover = true
-			player = board[1][1]
-		}
-	}
-
-
-	// Determine if the game is a draw 
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
-			if board[i][j] != "_" {
-				underscore_count++
+			// Bot logic
+			// Set random seed
+			s1 := rand.NewSource(time.Now().UnixNano())
+			r1 := rand.New(s1)
+		
+			// Pick random position, validate it, and mark it
+			position = r1.Intn(9) + 1
+			validpos = logic.CheckMoveValidity(board, position)
+			if validpos == 100 {
+				board = logic.MarkBoard(board, player, position)
 			}
 		}
 	}
-
-
-	// Returns correct value
-	if underscore_count == 9 {
-		fmt.Printf("Draw!")
-		return true
-	} else if gameover {
-		fmt.Printf("%s is the winner!", player)
-		return true
-	} else {
-		return false
-	}
-}
-
-
-// Sets board to an empty state
-func reset_board(board [3][3]string) [3][3]string {
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
-			board[i][j] = "_"
-		}
-	}
+	fmt.Printf("\n")
 	return board
 }
+
 
 func main() {
-	var gameover bool = false
+	var gameover int = 0
 	var player string = "X"
 	var replay string
 	var board = [3][3]string{
@@ -188,24 +63,38 @@ func main() {
 	}
 
 
-	// Game ends when gameover is false
-	for !gameover {
-		print_board(board)
-		board = player_play(board, player)
-		player = swap_player(player)
-		gameover = check_game_state(board)
+
+	// Game ends when gameover is different than 0
+	for gameover == 0 {
+		fmt.Printf("\n")
+		logic.PrintBoard(board)
+		if player == "X" {
+			board = play(board, player, 1)
+		} else {
+			board = play(board, player, 0)
+		}
+		gameover = logic.CheckGameState(board)
 
 		// If player wants to play again, reset the game
-		if gameover {
+		if gameover != 0 {
+			// Print results
+			fmt.Printf("\n")
+			logic.PrintBoard(board)
+			fmt.Printf("%s won!\n", player)
 			fmt.Printf("\nPlay again? (Y/n) ")
+			
+			// Get user input
 			fmt.Scanln(&replay)
 			replay = strings.ToLower(replay)
 			switch replay {
 			case "y":
-				gameover = false
+				gameover = 0
 				player = "X"
-				board = reset_board(board) 
+				board = logic.ResetBoard() 
 			}
 		}
+
+		// Once a player is done with their turn, let other player play
+		player = logic.SwapPlayer(player)
 	}
 }

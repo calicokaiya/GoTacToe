@@ -25,7 +25,9 @@ go run main.go
 ```
 
 # Future plans
-- Make an AI
+- Make the AI awesome(r) and smart(er)
+
+- Add two-player and two-AI support
 
 - Create a TUI
 

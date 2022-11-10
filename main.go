@@ -35,18 +35,37 @@ func play(board [3][3]string, player string, playertype int) [3][3]string {
 			}
 		} else {
 			// Bot logic
-			// Set random seed
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
 		
-			// Pick random position, validate it, and mark it
-			position = r1.Intn(9) + 1
-			validpos = logic.CheckMoveValidity(board, position)
-			if validpos == 100 {
-				board = logic.MarkBoard(board, player, position)
+			// See if AI can win with immediate move
+			// Will try every single move and determine if AI would win
+			
+			position = logic.AiWinnable(board, player) // This should be 100 if AI can win
+			if position != -100 {
+				validpos = 100
+			} else { 
+				// If the AI can't win, it'll determine if it can lose
+				position = logic.AiLosable(board, player)
+				fmt.Printf("Set position to %d\n", position)
+				if position != -100 {
+					fmt.Printf("AI will lose if they don't play %d", position)
+					validpos = 100
+				} else { 
+					// Set random seed
+					fmt.Printf("Going into random")
+					s1 := rand.NewSource(time.Now().UnixNano())
+					r1 := rand.New(s1)
+
+					position = r1.Intn(9) + 1
+					if logic.CheckMoveValidity(board, position) == 100 {
+
+						validpos = 100
+					}
+				}
 			}
 		}
 	}
+	fmt.Println("Trying to mark board")
+	board = logic.MarkBoard(board, player, position)
 	fmt.Printf("\n")
 	return board
 }
@@ -77,20 +96,19 @@ func main() {
 
 		// If player wants to play again, reset the game
 		if gameover != 0 {
-			// Print results
-			fmt.Printf("\n")
 			logic.PrintBoard(board)
-			fmt.Printf("%s won!\n", player)
-			fmt.Printf("\nPlay again? (Y/n) ")
+			logic.PrintResults(gameover, player)
 			
 			// Get user input
+			fmt.Printf("Play again? [Y/n] ")
 			fmt.Scanln(&replay)
 			replay = strings.ToLower(replay)
 			switch replay {
 			case "y":
 				gameover = 0
-				player = "X"
-				board = logic.ResetBoard() 
+				player = "O"
+				board = logic.ResetBoard()
+				
 			}
 		}
 

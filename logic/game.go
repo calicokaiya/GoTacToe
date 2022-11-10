@@ -30,6 +30,18 @@ func ResetBoard() [3][3]string {
 }
 
 
+// At the end of a game, prints winner / draw
+func PrintResults(gamestate int, player string) {
+	if gamestate == 50 {
+		fmt.Printf("Draw!")
+	} else if gamestate == 100 {
+		fmt.Printf("X wins!\n")
+	} else {
+		fmt.Printf("O wins!\n")
+	}
+}
+
+
 // Determine if we have a winner
 // Returns 0 when game is still going,
 // 50 when the game is a draw,
@@ -81,7 +93,6 @@ func CheckGameState(board [3][3]string) int {
 	} else if player == "O" {
 		return 200
 	} else if underscore_count == 9 {
-		fmt.Printf("Draw!")
 		return 50
 	} else {
 		return 0
